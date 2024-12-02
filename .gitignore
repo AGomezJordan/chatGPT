@@ -3,4 +3,5 @@
 /lib
 /lib64
 /.env
+/GPT_RESPONSES
 pyvenv.cfg
