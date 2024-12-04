@@ -1,5 +1,4 @@
-import os
-import json
+import os, json, spacy
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -11,26 +10,48 @@ client = OpenAI(
 )
 
 model = "gpt-3.5-turbo"
-prompt = "Elije un nombre para un elefante"
+prompt = "Cuenta una historia breve sobre un viaje a europa."
 messages = [
-    # {"role": "system", "content": "Eres un asistente creativo."},
     {"role": "user", "content": prompt}
 ]
 
 response = client.chat.completions.create(
-    model=model,
-    messages=messages,
-    n=3,
-    temperature=0.5,
-    max_tokens=20
+    model=model, # Modelo a usar
+    messages=messages, # Prompts a mandar
+    n=1, # Numero de respuestas
+    max_tokens=100 # Maximo de tokens por respuesta
 )
 
 print(response)
 print()
 
-# textGenerated = response.choices[0].message.content
-# print(textGenerated)
+textGenerated = response.choices[0].message.content
 
-for idx, choice in enumerate(response.choices):
-    textGenerated = choice.message.content
-    print(f"Respose {idx + 1}: {textGenerated}\n")
+print(textGenerated)
+
+print('\n----------------------------------\n')
+
+modelSpacy = spacy.load("es_core_news_md")
+analysis = modelSpacy(textGenerated)
+
+location = None
+
+for entity in analysis.ents:
+    if entity.label_ == 'LOC':
+        location = entity
+        break
+
+if location:
+    prompt2 = f"Dime más acerca de {location}"
+    messages2 = [
+        {"role": "user", "content": prompt2}
+    ]
+
+    response2 = client.chat.completions.create(
+        model=model, # Modelo a usar
+        messages=messages2, # Prompts a mandar
+        n=1, # Numero de respuestas
+        max_tokens=100 # Maximo de tokens por respuesta
+    )
+    textGenerated = response2.choices[0].message.content
+    print(textGenerated)
